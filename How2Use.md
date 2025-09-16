@@ -1,4 +1,5 @@
 0) Quick example  
+
 // ---------- 1) Templates ----------  
 SynInput = {"max_receptor":10, "flush_interval_sec":100, "dt":0.001}  
 SynE     = {"weight":0.5, "flush_interval_sec":100, "dt":0.001, "A_plus":0.01, "A_minus":0.012, "tau_plus":20, "tau_minus":20}  
