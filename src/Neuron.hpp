@@ -254,6 +254,40 @@ public:
   uint8_t type_code() const override { return 0; }
 };
 
+// ========== AMPA for Output Neuron ===========
+
+class RExcitatorySynapse : public ExcitatorySynapse {
+public:
+  using ExcitatorySynapse::ExcitatorySynapse; // 既存コンストラクタ継承
+
+  // δ（TD誤差などの報酬信号）を外部から注入
+  inline void set_delta(double d) { delta_ = d; }
+  inline void set_rstdp_params(double eta, double tau_pre, double tau_post, double tau_elig) {
+    eta_ = eta; tau_pre_ = tau_pre; tau_post_ = tau_post; tau_elig_ = tau_elig;
+  }
+
+  // ★ 純STDPではなく「R-STDP」をここで実行（Output用は常にこれ）
+  void apply_stdp(int /*t*/) override;
+
+  // 可視化/保存互換のため AMPA と同じコードを返す
+  uint8_t type_code() const override { return 0; }
+
+private:
+  // eligibility-trace と痕跡
+  double pre_trace_  = 0.0;
+  double post_trace_ = 0.0;
+  double elig_       = 0.0;
+
+  // R-STDPハイパラ
+  double eta_ = 1e-3;
+  double tau_pre_  = 0.02;  // [s]
+  double tau_post_ = 0.02;  // [s]
+  double tau_elig_ = 0.10;  // [s]
+
+  // 報酬信号（setterで更新）
+  double delta_ = 0.0;
+};
+
 // ========== InhibitorySynapse（GABA） ==========
 class InhibitorySynapse : public Synapse {
 public:
