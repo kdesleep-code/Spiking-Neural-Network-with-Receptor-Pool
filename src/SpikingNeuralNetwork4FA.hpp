@@ -145,7 +145,16 @@ public:
   explicit SpikingNeuralNetwork4FA(uint32_t seed = 0);
 
   // --- build fixed 49-100-8 ---
-  void build(const Config& cfg = Config{});
+  // NOTE: GCC互換のため default 引数は使わない（Config{} をデフォルト引数にするとエラーになるケースがある）
+  void build();                 // default config
+  void build(const Config& cfg); // explicit config
+
+  // --- public read-only helpers (for tests etc.) ---
+  int num_layers() const { return static_cast<int>(neurons.size()); }
+  int layer_size(int layer) const {
+    if (layer < 0 || layer >= static_cast<int>(neurons.size())) return 0;
+    return static_cast<int>(neurons[static_cast<size_t>(layer)].size());
+  }
 
   // --- input ---
   void set_observation_7x7_01(const std::vector<uint8_t>& obs01);
