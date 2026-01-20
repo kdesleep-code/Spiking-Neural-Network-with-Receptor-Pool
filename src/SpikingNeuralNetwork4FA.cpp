@@ -24,11 +24,11 @@ std::vector<double> SpikingNeuralNetwork4FA::normalize_prob_(std::vector<double>
 SpikingNeuralNetwork4FA::StdpFreezeState SpikingNeuralNetwork4FA::capture_freeze_state_() const {
   StdpFreezeState st;
   // layerにニューロンがいないケースは想定しないが、一応ガード
-  if (kLayerHidden < static_cast<int>(neurons.size()) && !neurons[kLayerHidden].empty()) {
-    st.hidden_freeze = neurons[kLayerHidden][0]->is_freeze();
+  if (kLayerHidden < static_cast<int>(neurons.size()) && !neurons[static_cast<size_t>(kLayerHidden)].empty()) {
+    st.hidden_freeze = neurons[static_cast<size_t>(kLayerHidden)][0]->is_freeze();
   }
-  if (kLayerOutput < static_cast<int>(neurons.size()) && !neurons[kLayerOutput].empty()) {
-    st.output_freeze = neurons[kLayerOutput][0]->is_freeze();
+  if (kLayerOutput < static_cast<int>(neurons.size()) && !neurons[static_cast<size_t>(kLayerOutput)].empty()) {
+    st.output_freeze = neurons[static_cast<size_t>(kLayerOutput)][0]->is_freeze();
   }
   return st;
 }
@@ -37,6 +37,10 @@ void SpikingNeuralNetwork4FA::restore_freeze_state_(const StdpFreezeState& st) {
   // freeze==true => disableSTDP, false => enableSTDP
   if (st.hidden_freeze) disableSTDP(kLayerHidden); else enableSTDP(kLayerHidden);
   if (st.output_freeze) disableSTDP(kLayerOutput); else enableSTDP(kLayerOutput);
+}
+
+void SpikingNeuralNetwork4FA::build() {
+  build(Config{});
 }
 
 void SpikingNeuralNetwork4FA::build(const Config& cfg) {
@@ -161,7 +165,7 @@ std::vector<double> SpikingNeuralNetwork4FA::run_and_get_action_scores(int steps
   for (int t = 0; t < steps; ++t) {
     step();
     for (int i = 0; i < kNOutput; ++i) {
-      if (neurons[kLayerOutput][static_cast<size_t>(i)]->is_spiking()) {
+      if (neurons[static_cast<size_t>(kLayerOutput)][static_cast<size_t>(i)]->is_spiking()) {
         counts[static_cast<size_t>(i)]++;
       }
     }
@@ -258,7 +262,7 @@ void SpikingNeuralNetwork4FA::teacher_phase(const std::vector<double>& target_pr
   for (int t = 0; t < steps; ++t) {
     for (int j = 0; j < kNOutput; ++j) {
       const double inj = current_scale * target_prob[static_cast<size_t>(j)];
-      neurons[kLayerOutput][static_cast<size_t>(j)]->add_current(inj);
+      neurons[static_cast<size_t>(kLayerOutput)][static_cast<size_t>(j)]->add_current(inj);
     }
     SpikingNeuralNetwork::step(); // built-in STDP
   }
@@ -314,7 +318,8 @@ void SpikingNeuralNetwork4FA::reward_gated_learning_phase_from_actions(
     set_inputs(last_input_rates_);
     for (int t = 0; t < stepsB; ++t) {
       for (int j = 0; j < kNOutput; ++j) {
-        neurons[kLayerOutput][static_cast<size_t>(j)]->add_current(scale * target[static_cast<size_t>(j)]);
+        neurons[static_cast<size_t>(kLayerOutput)][static_cast<size_t>(j)]
+          ->add_current(scale * target[static_cast<size_t>(j)]);
       }
       SpikingNeuralNetwork::step();
     }
@@ -328,7 +333,8 @@ void SpikingNeuralNetwork4FA::reward_gated_learning_phase_from_actions(
 
     for (int t = 0; t < stepsA; ++t) {
       for (int j = 0; j < kNOutput; ++j) {
-        neurons[kLayerOutput][static_cast<size_t>(j)]->add_current(scale * target[static_cast<size_t>(j)]);
+        neurons[static_cast<size_t>(kLayerOutput)][static_cast<size_t>(j)]
+          ->add_current(scale * target[static_cast<size_t>(j)]);
       }
       SpikingNeuralNetwork::step();
     }
