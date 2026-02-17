@@ -7,6 +7,8 @@
 #include <iostream>
 #include <fstream>
 
+#define SAVE_MODE
+
 // ------------------------------ Neuron ------------------------------
 Neuron::Neuron(int layer_id, int neuron_id, double max_receptor,
                int flush_interval_sec, double dt)
@@ -106,6 +108,7 @@ void Neuron::check_and_save_history(int step) {
 }
 
 void Neuron::save_history_to_bin(const std::string& filename) {
+#ifdef SAVE_MODE
   const int32_t header_len = static_cast<int32_t>(header_str_.size());
   const int32_t n = static_cast<int32_t>(membrane_potential_history_.size());
 
@@ -126,6 +129,7 @@ void Neuron::save_history_to_bin(const std::string& filename) {
   ofs.write(reinterpret_cast<const char*>(ic_float.data()), n * sizeof(float));
   ofs.write(reinterpret_cast<const char*>(spike_history_.data()), n * sizeof(uint8_t));
   ofs.close();
+#endif
 }
 
 // ------------------------------ InputNeuron ------------------------------
@@ -354,6 +358,7 @@ void Synapse::check_and_save_history(int step) {
 }
 
 void Synapse::save_history_to_bin(const std::string& filename) {
+#ifdef SAVE_MODE
   const int32_t header_len = static_cast<int32_t>(header_str_.size());
   const int32_t n = static_cast<int32_t>(pre_spike_history_.size());
 
@@ -370,6 +375,7 @@ void Synapse::save_history_to_bin(const std::string& filename) {
   ofs.write(reinterpret_cast<const char*>(receptor_pool_history_.data()),
             n * sizeof(float));
   ofs.close();
+#endif
 }
 
 void Synapse::clear_history() {
